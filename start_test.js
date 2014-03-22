@@ -13,11 +13,14 @@ else if (process.env.PACKAGES !== '') {
 
 var meteor;
 
+console.log('Updating packages by force...');
+
 exec('mrt update --force', {cwd: workingDir}, function(err, stdout, stderr) {
   if (err) {
     console.log('could not mrt update, Error: ' + err);
   } else {
     ///
+    console.log(stdout);
    
     meteor = spawn('mrt', args, {cwd: workingDir});
     meteor.stdout.pipe(process.stdout);
