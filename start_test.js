@@ -13,24 +13,35 @@ else if (process.env.PACKAGES !== '') {
 
 var meteor;
 
-   
-meteor = spawn('mrt', args);
-meteor.stdout.pipe(process.stdout);
-meteor.stderr.pipe(process.stderr);
-meteor.on('close', function (code) {
-  console.log('mrt exited with code ' + code);
-  process.exit(code);
-});
+console.log('Updating packages by force...');
 
-meteor.stdout.on('data', function startTesting(data) {
-  var data = data.toString();
-  if(data.match(/10015|test-in-console listening/)) {
-    console.log('starting testing...');
-    meteor.stdout.removeListener('data', startTesting);
-    runTestSuite();
-  } 
-});    
+exec('mrt update --force', {cwd: workingDir}, function(err, stdout, stderr) {
+  if (err) {
+    console.log('could not mrt update, Error: ' + err);
+  } else {
+    ///
+    console.log(stdout);
+   
+    meteor = spawn('mrt', args, {cwd: workingDir});
+    meteor.stdout.pipe(process.stdout);
+    meteor.stderr.pipe(process.stderr);
+    meteor.on('close', function (code) {
+      console.log('mrt exited with code ' + code);
+      process.exit(code);
+    });
     
+    meteor.stdout.on('data', function startTesting(data) {
+      var data = data.toString();
+      if(data.match(/10015|test-in-console listening/)) {
+        console.log('starting testing...');
+        meteor.stdout.removeListener('data', startTesting);
+        runTestSuite();
+      } 
+    });    
+    
+    ///
+  }
+});
 
 function runTestSuite() {
   process.env.URL = "http://localhost:10015/"
